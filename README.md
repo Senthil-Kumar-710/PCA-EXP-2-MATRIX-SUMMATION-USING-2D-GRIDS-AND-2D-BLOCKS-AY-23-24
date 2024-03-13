@@ -3,7 +3,7 @@
 <h3>NAME: Senthil Kumar S</h3>
 <h3>REG.NO: 212221230091</h3>
 <h3>EX. NO: 02</h3>
-<h3>DATE:</h3>
+<h3>DATE: 13/03/2024</h3>
 <h1> <align=center> MATRIX SUMMATION WITH A 2D GRID AND 2D BLOCKS </h3>
 i.  Use the file sumMatrixOnGPU-2D-grid-2D-block.cu
 
