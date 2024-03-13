@@ -1,44 +1,41 @@
 # PCA-EXP-2-Matrix-Summation-using-2D-Grids-and-2D-Blocks-AY-23-24
 
-<h3>NAME: Senthil Kumar S</h3>
-<h3>REG.NO: 212221230091</h3>
-<h3>EX. NO: 02</h3>
-<h3>DATE:</h3>
+<h3>Name: Senthil Kumar S</h3>
+<h3>Reg No: 212221230091</h3>
+<h3>EX. NO: 2 </h3>
+<h3>DATE: 13/03/2024</h3>
 <h1> <align=center> MATRIX SUMMATION WITH A 2D GRID AND 2D BLOCKS </h3>
 i.  Use the file sumMatrixOnGPU-2D-grid-2D-block.cu
-
-ii. Matrix summation with a 2D grid and 2D blocks. Adapt it to integer matrix addition. 
-Find the best execution configuration. </h3>
+ii. Matrix summation with a 2D grid and 2D blocks. Adapt it to integer matrix addition. Find the best execution configuration. </h3>
 
 ## AIM:
-To perform  matrix summation with a 2D grid and 2D blocks and adapting it to integer matrix addition.
+
+To perform matrix summation with a 2D grid and 2D blocks and adapting it to integer matrix addition.
 
 ## EQUIPMENTS REQUIRED:
+
 Hardware – PCs with NVIDIA GPU & CUDA NVCC
-
 Google Colab with NVCC Compiler
-
-
-
 
 ## PROCEDURE:
 
-1.	Initialize the data: Generate random data for two input arrays using the initialData function.
-2.	Perform the sum on the host: Use the sumMatrixOnHost function to calculate the sum of the two input arrays on the host (CPU) for later verification of the GPU results.
-3.	Allocate memory on the device: Allocate memory on the GPU for the two input arrays and the output array using cudaMalloc.
-4.	Transfer data from the host to the device: Copy the input arrays from the host to the device using cudaMemcpy.
-5.	Set up the execution configuration: Define the size of the grid and blocks. Each block contains multiple threads, and the grid contains multiple blocks. The total number of threads is equal to the size of the grid times the size of the block.
-6.	Perform the sum on the device: Launch the sumMatrixOnGPU2D kernel on the GPU. This kernel function calculates the sum of the two input arrays on the device (GPU).
-7.	Synchronize the device: Use cudaDeviceSynchronize to ensure that the device has finished all tasks before proceeding.
-8.	Transfer data from the device to the host: Copy the output array from the device back to the host using cudaMemcpy.
-9.	Check the results: Use the checkResult function to verify that the output array calculated on the GPU matches the output array calculated on the host.
-10.	Free the device memory: Deallocate the memory that was previously allocated on the GPU using cudaFree.
-11.	Free the host memory: Deallocate the memory that was previously allocated on the host.
-12.	Reset the device: Reset the device using cudaDeviceReset to ensure that all resources are cleaned up before the program exits.
+1. Initialize the data: Generate random data for two input arrays using the initialData function.
+2. Perform the sum on the host: Use the sumMatrixOnHost function to calculate the sum of the two input arrays on the host (CPU) for later verification of the GPU results.
+3. Allocate memory on the device: Allocate memory on the GPU for the two input arrays and the output array using cudaMalloc.
+4. Transfer data from the host to the device: Copy the input arrays from the host to the device using cudaMemcpy.
+5. Set up the execution configuration: Define the size of the grid and blocks. Each block contains multiple threads, and the grid contains multiple blocks. The total number of threads is equal to the size of the grid times the size of the block.
+6. Perform the sum on the device: Launch the sumMatrixOnGPU2D kernel on the GPU. This kernel function calculates the sum of the two input arrays on the device (GPU).
+7. Synchronize the device: Use cudaDeviceSynchronize to ensure that the device has finished all tasks before proceeding.
+8. Transfer data from the device to the host: Copy the output array from the device back to the host using cudaMemcpy.
+9. Check the results: Use the checkResult function to verify that the output array calculated on the GPU matches the output array calculated on the host.
+10. Free the device memory: Deallocate the memory that was previously allocated on the GPU using cudaFree.
+11. Free the host memory: Deallocate the memory that was previously allocated on the host.
+12. Reset the device: Reset the device using cudaDeviceReset to ensure that all resources are cleaned up before the program exits.
 
 ## PROGRAM:
+
 ```
-%%cuda
+%%cuda 
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -118,24 +115,32 @@ inline double seconds()
 #endif // _COMMON_H
 
 
-void initialData(float *ip, const int size)
+
+/*
+ * This example demonstrates a simple vector sum on the GPU and on the host.
+ * sumArraysOnGPU splits the work of the vector sum across CUDA threads on the
+ * GPU. A 2D thread block and 2D grid are used. sumArraysOnHost sequentially
+ * iterates through vector elements on the host.
+ */
+
+void initialData(int *ip, const int size)
 {
     int i;
 
     for(i = 0; i < size; i++)
     {
-        ip[i] = (float)(rand() & 0xFF) / 10.0f;
+        ip[i] = (int)(rand() & 0xFF) / 10.0f;
     }
 
     return;
 }
 
-void sumMatrixOnHost(float *A, float *B, float *C, const int nx,
+void sumMatrixOnHost(int *A, int *B, int *C, const int nx,
                      const int ny)
 {
-    float *ia = A;
-    float *ib = B;
-    float *ic = C;
+    int *ia = A;
+    int *ib = B;
+    int *ic = C;
 
     for (int iy = 0; iy < ny; iy++)
     {
@@ -154,7 +159,7 @@ void sumMatrixOnHost(float *A, float *B, float *C, const int nx,
 }
 
 
-void checkResult(float *hostRef, float *gpuRef, const int N)
+void checkResult(int *hostRef, int *gpuRef, const int N)
 {
     double epsilon = 1.0E-8;
     bool match = 1;
@@ -164,7 +169,7 @@ void checkResult(float *hostRef, float *gpuRef, const int N)
         if (abs(hostRef[i] - gpuRef[i]) > epsilon)
         {
             match = 0;
-            printf("host %f gpu %f\n", hostRef[i], gpuRef[i]);
+            printf("host %d gpu %d\n", hostRef[i], gpuRef[i]);
             break;
         }
     }
@@ -176,7 +181,7 @@ void checkResult(float *hostRef, float *gpuRef, const int N)
 }
 
 // grid 2D block 2D
-__global__ void sumMatrixOnGPU2D(float *A, float *B, float *C, int NX, int NY)
+__global__ void sumMatrixOnGPU2D(int *A, int *B, int *C, int NX, int NY)
 {
     unsigned int ix = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int iy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -208,11 +213,11 @@ int main(int argc, char **argv)
     printf("Matrix size: nx %d ny %d\n", nx, ny);
 
     // malloc host memory
-    float *h_A, *h_B, *hostRef, *gpuRef;
-    h_A = (float *)malloc(nBytes);
-    h_B = (float *)malloc(nBytes);
-    hostRef = (float *)malloc(nBytes);
-    gpuRef = (float *)malloc(nBytes);
+    int *h_A, *h_B, *hostRef, *gpuRef;
+    h_A = (int *)malloc(nBytes);
+    h_B = (int *)malloc(nBytes);
+    hostRef = (int *)malloc(nBytes);
+    gpuRef = (int *)malloc(nBytes);
 
     // initialize data at host side
     double iStart = seconds();
@@ -231,7 +236,7 @@ int main(int argc, char **argv)
     printf("sumMatrixOnHost elapsed %f sec\n", iElaps);
 
     // malloc device global memory
-    float *d_MatA, *d_MatB, *d_MatC;
+    int *d_MatA, *d_MatB, *d_MatC;
     CHECK(cudaMalloc((void **)&d_MatA, nBytes));
     CHECK(cudaMalloc((void **)&d_MatB, nBytes));
     CHECK(cudaMalloc((void **)&d_MatC, nBytes));
@@ -281,8 +286,15 @@ int main(int argc, char **argv)
 ```
 
 ## OUTPUT:
-![](o1.png)
 
+## Float:
+
+![](float.png)
+
+## Int:
+
+![](int.png)
 
 ## RESULT:
-The host took 0.835959 seconds to complete it’s computation, while the GPU outperforms the host and completes the computation in 0.053757 seconds. Therefore, float variables in the GPU will result in the best possible result. Thus, the matrix summation using 2D grids and 2D blocks has been performed successfully.
+
+The host took 0.847613 seconds to complete it’s computation, while the GPU outperforms the host and completes the computation in 0.013663 seconds. Therefore, float variables in the GPU will result in the best possible result. Thus, matrix summation using 2D grids and 2D blocks has been performed successfully.
